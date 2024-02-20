@@ -95,25 +95,25 @@ class GameState():
 
         return moves
     
-    # #Determine if the current player in a check
-    # def inCheck(self):
-    #     if self.whiteToMove:
-    #         return self.squareUnderAttack(self.whiteKingLocation[0], self.whiteKingLocation[1])
-    #     else:
-    #         return self.squareUnderAttack(self.blackKingLocation[0], self.blackKingLocation[1])
+    #Determine if the current player in a check
+    def inCheck(self):
+        if self.whiteToMove:
+            return self.squareUnderAttack(self.whiteKingLocation[0], self.whiteKingLocation[1])
+        else:
+            return self.squareUnderAttack(self.blackKingLocation[0], self.blackKingLocation[1])
     
-    # '''
-    # Determine if the enemy can attack the squre r, c
-    # '''
-    # def squareUnderAttack(self, r, c):
-    #     self.whiteToMove = not self.whiteToMove #switch the opponent's turn
-    #     oppMoves = self.getAllPossibleMoves()
-    #     self.whiteToMove = not self.whiteToMove #switch turn back
-    #     for move in oppMoves:
-    #         if move.endRow == r and move.endCol == c: #squre is under attack
-    #             # self.whiteToMove = not self.whiteToMove #switch turns back
-    #             return True
-    #     return False
+    '''
+    Determine if the enemy can attack the squre r, c
+    '''
+    def squareUnderAttack(self, r, c):
+        self.whiteToMove = not self.whiteToMove #switch the opponent's turn
+        oppMoves = self.getAllPossibleMoves()
+        self.whiteToMove = not self.whiteToMove #switch turn back
+        for move in oppMoves:
+            if move.endRow == r and move.endCol == c: #squre is under attack
+                # self.whiteToMove = not self.whiteToMove #switch turns back
+                return True
+        return False
 
     '''
     All moves without considering checks
