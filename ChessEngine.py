@@ -21,6 +21,8 @@ class GameState():
         self.moveLog = []
         self.whiteKingLocation = (7, 4)
         self.blackKingLocation = (0, 4)
+        self.checkMate = False
+        self.staleMate = False
 
 
     '''Takes a Move as a parameter and executes it 
@@ -66,6 +68,15 @@ class GameState():
                 moves.remove(moves[i]) #5.) if they do attack yor king, not a valid move
             self.whiteToMove = not self.whiteToMove
             self.undoMove()
+        if len(moves) == 0: #either checkmate or stalemate
+            if self.inCheck():
+                self.checkMate = True
+            else:
+                self.staleMate = True
+        else:
+            self.checkMate = False
+            self.staleMate = False
+            
         return moves
     
     #Determine if the current player in a check
