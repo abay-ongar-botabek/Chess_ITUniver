@@ -228,7 +228,71 @@ class GameState():
                         break
                 else: #off board
                     break
-
+    
+    '''
+    Returns if the player is in check, a list of pins, and a list of checks
+    '''
+    def checkForPinsAndChecks(self):
+        pins = [] #squares where the allied pinned piece is and direction pinned from
+        checks = [] #squares where enemy is applying a check
+        inCheck = False
+        if self.whiteToMove:
+            enemyColor = "b"
+            allyColor = "w"
+            startRow = self.whiteKingLocation[0]
+            startCol = self.whiteKingLocation[1]
+        else:
+            enemyColor = "w"
+            allyColor = "b"
+            startRow = self.blackKingLocation[0]
+            startCol = self.blackKingLocation[1]
+        #check outward from king for pins and checks, keep track of pins
+        directions = ((-1, 0), (0, -1), (1, 0), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1))
+        for j in range(len(directions)):
+            d = directions[j]
+            possiblePin = () #reset possible pins
+            for i in range(1, 8):
+                endRow = startRow + d[0] * i
+                endCol = startCol + d[1] * i
+                if 0 <= endRow < 8 and 0 <= endCol < 8:
+                    endPiece = self.board[endRow][endCol]
+                    if endPiece[0] == allyColor:
+                        if possiblePin == (): #1st allied piece could be pinned
+                            possiblePin = (endRow, endCol, d[0], d[1])
+                        else: #2nd allied piece, so no pin or check possible in this direction
+                            break
+                    elif endPiece[0] == enemyColor:
+                        type = endPiece[1]
+                        #5 possibilities here in this complex conditional
+                        #1. orthogonally away from king and piece is a rook
+                        #2. diagonally away from king and piece is a bishop
+                        #3. 1 square away diagonally from king and piece is a pawn
+                        #4. any direction and piece is a queen
+                        #5. any direction 1 square away and piece is a king (another king kontolled square might be)
+                        if (0 <= j <= 3 and type == 'R') or \
+                                (4 <= j <= 7 and type == 'B') or \
+                                (i == 1 and type == 'p' ((enemyColor == 'w' and 6 <= j <= 7) or (enemyColor == 'b' and 4 <= j <= 5))) or \
+                                (type == 'Q') or (i == 1 and type == 'K'):
+                            if possiblePin == (): #no piece blocking, so check
+                                inCheck = True
+                                checks.append((endRow, endCol, d[0], d[1]))
+                                break
+                            else: #piece blocking so pin
+                                pins.append(possiblePin)
+                                break
+                        else: #enemy piece not applying check:
+                            break
+        #check for knight checks
+        knightMoves = ((-2, -1), (-2, 1), (-1, -2), (-1, 2), (1, -2), (1, 2), (2, -1), (2, 1))
+        for m in knightMoves:
+            endRow = startRow + m[0]
+            endCol = startCol + m[1]
+            if 0 <= endRow < 8 and 0 <= endCol < 8:
+                endPiece = self.board[endRow][endCol]
+                if endPiece[0] == enemyColor and endPiece[1] == 'N': #enemy knight attacking king
+                    inCheck = True
+                    checks.append((endRow, endCol, m[0], m[1]))
+        return inCheck, pins, checks
 
 class Move():
     # maps keys to values
