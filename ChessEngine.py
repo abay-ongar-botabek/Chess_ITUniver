@@ -92,26 +92,28 @@ class GameState():
                 self.getKingMoves(kingRow, kingCol, moves)
         else: #not in check so all moves are fine
             moves = self.getAllPossibleMoves()
+
+        return moves
     
-    #Determine if the current player in a check
-    def inCheck(self):
-        if self.whiteToMove:
-            return self.squareUnderAttack(self.whiteKingLocation[0], self.whiteKingLocation[1])
-        else:
-            return self.squareUnderAttack(self.blackKingLocation[0], self.blackKingLocation[1])
+    # #Determine if the current player in a check
+    # def inCheck(self):
+    #     if self.whiteToMove:
+    #         return self.squareUnderAttack(self.whiteKingLocation[0], self.whiteKingLocation[1])
+    #     else:
+    #         return self.squareUnderAttack(self.blackKingLocation[0], self.blackKingLocation[1])
     
-    '''
-    Determine if the enemy can attack the squre r, c
-    '''
-    def squareUnderAttack(self, r, c):
-        self.whiteToMove = not self.whiteToMove #switch the opponent's turn
-        oppMoves = self.getAllPossibleMoves()
-        self.whiteToMove = not self.whiteToMove #switch turn back
-        for move in oppMoves:
-            if move.endRow == r and move.endCol == c: #squre is under attack
-                # self.whiteToMove = not self.whiteToMove #switch turns back
-                return True
-        return False
+    # '''
+    # Determine if the enemy can attack the squre r, c
+    # '''
+    # def squareUnderAttack(self, r, c):
+    #     self.whiteToMove = not self.whiteToMove #switch the opponent's turn
+    #     oppMoves = self.getAllPossibleMoves()
+    #     self.whiteToMove = not self.whiteToMove #switch turn back
+    #     for move in oppMoves:
+    #         if move.endRow == r and move.endCol == c: #squre is under attack
+    #             # self.whiteToMove = not self.whiteToMove #switch turns back
+    #             return True
+    #     return False
 
     '''
     All moves without considering checks
@@ -128,30 +130,48 @@ class GameState():
 
     '''Get all the pawn moves for the pawn located at row, col and add these moves to the list'''
     def getPawnMoves(self, r, c, moves):
-        if self.whiteToMove:  #white pawn moves
-            if self.board[r-1][c] == "--": # 1 square pawn advance
-                moves.append(Move((r, c), (r-1, c), self.board))
-                if r == 6 and self.board[r-2][c] == "--": # 2 square pawn advance
-                    moves.append(Move((r, c), (r-2, c), self.board))
-            if c - 1 >= 0: #captures to the left
-                if self.board[r-1][c-1][0] == 'b': #enemy piece to capture
-                    moves.append(Move((r, c), (r - 1, c - 1), self.board))
-            if c + 1 <= 7: # captures to the right
-                if self.board[r-1][c+1][0] == 'b': #enemy piece to capture
-                    moves.append(Move((r, c), (r-1, c+1), self.board))
+        piecePinned = False
+        pinDirection = ()
+        for i in range(len(self.pins)-1, -1, -1):
+            if self.pins[i][0] == r and self.pins[i][1] == c:
+                piecePinned = True
+                pinDirection = (self.pins[i][2], self.pins[i][3])
+                self.pins.remove(self.pins[i])
+                break
+
+        if self.whiteToMove: #white pawn moves
+            if self.board[r-1][c] == "--": #1 square move
+                if not piecePinned or pinDirection == (-1, 0):
+                    moves.append(Move((r, c), (r-1, c), self.board))
+                    if r == 6 and self.board[r-2][c] == "--": #2 squre moves
+                        moves.append(Move((r, c), (r-2, c), self.board))
+
+            #captures
+            if c-1 >= 0: #capture to left
+                if self.board[r-1][c-1][0] == 'b':
+                    if not piecePinned or pinDirection == (-1, -1):
+                        moves.append(Move((r, c), (r-1, c-1), self.board))
+            if c+1 <= 7: #capture to right
+                if self.board[r-1][c+1][0] == 'b':
+                    if not piecePinned or pinDirection == (-1, 1):
+                        moves.append(Move((r, c), (r-1, c+1), self.board))
 
         else: #black pawn moves
-            if self.board[r + 1][c] == "--": # 1 square move
-                moves.append(Move((r, c), (r + 1, c), self.board))
-                if r == 1 and self.board[r + 2][c] == "--": # 2 square moves
-                    moves.append(Move((r, c), (r + 2, c), self.board))
+            if  self.board[r+1][c] == "--": #1 squre move
+                if not piecePinned  or pinDirection == (1, 0):
+                    moves.append(Move((r, c), (r+1, c), self.board))
+                    if r == 1 and self.board[r+2][c] == "--": #2 squre moves
+                        moves.append(Move((r, c), (r+2, c), self.board))
+        
             #captures
-            if c - 1 >= 0: #capture to left
-                if self.board[r + 1][c - 1][0] == "w":
-                    moves.append(Move((r, c), (r + 1, c - 1), self.board))
-                if c + 1 <= 7: #capture to right
-                    if self.board[r + 1][c + 1][0] == "w":
-                        moves.append(Move((r, c), (r + 1, c + 1), self.board))
+            if c-1 >= 0: #captures to left
+                if self.board[r+1][c-1][0] == 'w':
+                    if not piecePinned or pinDirection == (1, -1):
+                        moves.append(Move((r, c), (r+1, c-1), self.board))
+            if c+1 <= 7: #capture to right
+                if self.board[r+1][c+1][0] == 'w':
+                    if not piecePinned or pinDirection == (1, 1):
+                        moves.append(Move((r, c), (r+1, c+1), self.board))
 
             #add pawn promotions later
 
@@ -282,6 +302,8 @@ class GameState():
                                 break
                         else: #enemy piece not applying check:
                             break
+                else:
+                    break #off board
         #check for knight checks
         knightMoves = ((-2, -1), (-2, 1), (-1, -2), (-1, 2), (1, -2), (1, 2), (2, -1), (2, 1))
         for m in knightMoves:
