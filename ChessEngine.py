@@ -319,7 +319,7 @@ class GameState():
                 endCol = startCol + d[1] * i
                 if 0 <= endRow < 8 and 0 <= endCol < 8:
                     endPiece = self.board[endRow][endCol]
-                    if endPiece[0] == allyColor:
+                    if endPiece[0] == allyColor and endPiece[1] != 'K':
                         if possiblePin == (): #1st allied piece could be pinned
                             possiblePin = (endRow, endCol, d[0], d[1])
                         else: #2nd allied piece, so no pin or check possible in this direction
@@ -332,10 +332,7 @@ class GameState():
                         #3. 1 square away diagonally from king and piece is a pawn
                         #4. any direction and piece is a queen
                         #5. any direction 1 square away and piece is a king (another king kontolled square might be)
-                        if (0 <= j <= 3 and type == 'R') or \
-                                (4 <= j <= 7 and type == 'B') or \
-                                (i == 1 and type == 'p' ((enemyColor == 'w' and 6 <= j <= 7) or (enemyColor == 'b' and 4 <= j <= 5))) or \
-                                (type == 'Q') or (i == 1 and type == 'K'):
+                        if (0 <= j <= 3 and type == 'R') or (4 <= j <= 7 and type == 'B') or (i == 1 and type == 'p' ((enemyColor == 'w' and 6 <= j <= 7) or (enemyColor == 'b' and 4 <= j <= 5))) or (type == 'Q') or (i == 1 and type == 'K'):
                             if possiblePin == (): #no piece blocking, so check
                                 inCheck = True
                                 checks.append((endRow, endCol, d[0], d[1]))
