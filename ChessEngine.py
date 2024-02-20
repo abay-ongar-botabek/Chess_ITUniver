@@ -210,15 +210,24 @@ class GameState():
     '''Get all the Knight moves for the pawn located at row, col and add these moves to the list'''
 
     def getKnightMoves(self, r, c, moves):
+        piecePinned = False
+        pinDirection = ()
+        for i in range(len(self.pins)-1, -1, -1):
+            if self.pins[i][0] == r and self.pins[i][1] == c:
+                piecePinned == True
+                pinDirection = (self.pins[i][2], self.pins[i][3])
+                self.pins.remove(self.pins[i])
+                break
         knightMoves = ((-2, -1), (-2, 1), (-1, -2), (-1, 2), (1, -2), (1, 2), (2, -1), (2, 1))
         allyColor = "w" if self.whiteToMove else "b"
         for m in knightMoves:
             endRow = r + m[0]
             endCol = c + m[1]
             if 0 <= endRow < 8 and 0 <= endCol < 8:
-                endPiece = self.board[endRow][endCol]
-                if endPiece[0] != allyColor: #not an ally piece (empty or enemy piece)
-                    moves.append(Move((r, c), (endRow, endCol), self.board))
+                if not piecePinned:
+                    endPiece = self.board[endRow][endCol]
+                    if endPiece[0] != allyColor: #not an ally piece (empty or enemy piece)
+                        moves.append(Move((r, c), (endRow, endCol), self.board))
 
     '''Get all the Queen moves for the pawn located at row, col and add these moves to the list'''
 
@@ -242,6 +251,14 @@ class GameState():
     '''Get all the Bishop moves for the pawn located at row, col and add these moves to the list'''
 
     def getBishopMoves(self, r, c, moves):
+        piecePinned = False
+        pinDirection = ()
+        for i in range(len(self.pins)-1, -1, -1):
+            if self.pins[i][0] == r and self.pins[i][1] == c:
+                piecePinned = True
+                pinDirection = (self.pins[i][2], self.pins[i][3])
+                self.pins.remove(self.pins[i])
+                break
         directions = ((-1, -1), (-1, 1), (1, -1), (1, 1)) #4 diagonals
         enemyColor = "b" if self.whiteToMove else "w"
         for d in directions:
@@ -249,14 +266,15 @@ class GameState():
                 endRow = r + d[0] * i
                 endCol = c + d[1] * i
                 if 0 <= endRow < 8 and 0 <= endCol < 8:
-                    endPiece = self.board[endRow][endCol]
-                    if endPiece == "--": #empty space valid
-                        moves.append(Move((r, c), (endRow, endCol), self.board))
-                    elif endPiece[0] == enemyColor: #enemy piece valid
-                        moves.append(Move((r, c), (endRow, endCol), self.board))
-                        break
-                    else: #friendly piece invalid
-                        break
+                    if not piecePinned or pinDirection == d or pinDirection == (-d[0], -d[1]):
+                        endPiece = self.board[endRow][endCol]
+                        if endPiece == "--": #empty space valid
+                            moves.append(Move((r, c), (endRow, endCol), self.board))
+                        elif endPiece[0] == enemyColor: #enemy piece valid
+                            moves.append(Move((r, c), (endRow, endCol), self.board))
+                            break
+                        else: #friendly piece invalid
+                            break
                 else: #off board
                     break
     
