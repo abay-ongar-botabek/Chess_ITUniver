@@ -31,7 +31,7 @@ class GameState():
         self.board[move.endRow][move.endCol] = move.pieceMoved
         self.moveLog.append(move)  # log the move so we can undo it later
         self.whiteToMove = not self.whiteToMove  # swap players
-        #update the king's position if needed
+        #update the king's position if moved
         if move.pieceMoved == 'wK':
             self.whiteKingLocation = (move.endRow, move.endCol)
         elif move.pieceMoved == 'bK':
@@ -57,14 +57,13 @@ class GameState():
         #1.) generate all possible moves
         moves = self.getAllPossibleMoves()
         #2.) for each move, make the move
-        for i in range(len(moves) -1, -1): #when removing from the list go backwards through that list
+        for i in range(len(moves)-1, -1, -1): #when removing from the list go backwards through that list
             self.makeMove(moves[i])
-        #3.) generate all opponent's move
-        #4.) for each of your opponent's move, see if they attack your king
+            #3.) generate all opponent's move
+            #4.) for each of your opponent's move, see if they attack your king
             self.whiteToMove = not self.whiteToMove
             if self.inCheck():
-                moves.remove(moves[i])
-        #5.) if they do attack yor king, not a valid move
+                moves.remove(moves[i]) #5.) if they do attack yor king, not a valid move
             self.whiteToMove = not self.whiteToMove
             self.undoMove()
         return moves
@@ -82,10 +81,10 @@ class GameState():
     def squareUnderAttack(self, r, c):
         self.whiteToMove = not self.whiteToMove #switch the opponent's turn
         oppMoves = self.getAllPossibleMoves()
-        self.whiteToMove = not self.whiteToMove
+        self.whiteToMove = not self.whiteToMove #switch turn back
         for move in oppMoves:
             if move.endRow == r and move.endCol == c: #squre is under attack
-                self.whiteToMove = not self.whiteToMove #switch turns back
+                # self.whiteToMove = not self.whiteToMove #switch turns back
                 return True
         return False
 
